@@ -37,11 +37,20 @@ const users = {
   ]
 };
 
+app.use(express.json());
+
 const findUserByName = (name) => {
   return users["users_list"].filter(
     (user) => user["name"] === name
   );
 };
+
+const findUserByJob = (name) => {
+  return users["users_list"].filter(
+    (user) => user["job"] === name
+  );
+};
+
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
@@ -50,10 +59,6 @@ const addUser = (user) => {
   return user;
 };
 
-function getUsersByNameAndJob(name, job) {
-  return users.users_list.filter((user) => user.name === name && user.job === job);
-}
-
 const deleteUser = (id) => {
   users["users_list"] = users["users_list"].filter(
     (user) => user["id"] !== id
@@ -61,7 +66,9 @@ const deleteUser = (id) => {
   return users["users_list"];
 }
 
-app.use(express.json());
+function getUsersByNameAndJob(name, job) {
+  return users.users_list.filter((user) => user.name === name && user.job === job);
+}
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -79,35 +86,59 @@ app.get("/users/:id", (req, res) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
+  if (!userToAdd || !userToAdd.id || !userToAdd.name || !userToAdd.job) {
+    // Return 400 Bad Request if the user data is incomplete
+    res.status(400).send("Invalid user data.");
+    return;
+  }
   addUser(userToAdd);
-  res.send();
+  res.status(201).send(userToAdd); // 201 Created for successful addition
 });
 
 app.delete("/users/:id", (req, res) => {
   const id = req.params["id"];
-  let result = deleteUser(id);
-  if (result === undefined) {
+  const userExists = findUserById(id);
+  if (!userExists) {
+    // Return 404 Not Found if the user doesn't exist
     res.status(404).send("Resource not found.");
-  } else {
-    res.send(result);
+    return;
   }
+  deleteUser(id);
+  res.status(204).send(); // 204 No Content for successful deletion
 });
 
 app.get("/users", (req, res) => {
   const { name, job } = req.query;
   if (name != undefined && job != undefined) {
     let result = getUsersByNameAndJob(name, job);
-    res.send(result);
+    if (result.length === 0) {
+      // Return 404 Not Found if no users match the query
+      res.status(404).send("No users found with the specified name and job.");
+    } else {
+      res.status(200).send(result); // 200 OK for successful retrieval
+    }
   }
   else if (name != undefined && job === undefined) {
     let result = findUserByName(name);
-    res.send(result);
+    if (result.length === 0) {
+      res.status(404).send("No users found with the specified name.");
+    } else {
+      res.status(200).send(result);
+    }
+  }
+  else if (name === undefined && job != undefined) {
+    let result = findUserByJob(job);
+    if (result.length === 0) {
+      res.status(404).send("No users found with the specified job.");
+    }
+    else {
+      res.status(200).send(result);
+    }
   }
   else {
     res.send(users);
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
