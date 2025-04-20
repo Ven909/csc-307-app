@@ -23,6 +23,26 @@ import Form from "./Form";
         const promise = fetch("http://localhost:8000/users");
         return promise;
       }
+
+      function postUser(user) {
+        const promise = fetch("http://localhost:8000/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(user),
+        });
+        return promise;
+      }
+
+      function updateList(person) {
+        postUser(person)
+          .then((res) => res.json())
+          .then((json) => setCharacters([...characters, json]))
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     
       useEffect(() => {
         fetchUsers()

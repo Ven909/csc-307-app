@@ -88,7 +88,7 @@ app.get("/users/:id", (req, res) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  if (!userToAdd || !userToAdd.id || !userToAdd.name || !userToAdd.job) {
+  if (!userToAdd || !userToAdd.name || !userToAdd.job) {
     // Return 400 Bad Request if the user data is incomplete
     res.status(400).send("Invalid user data.");
     return;
