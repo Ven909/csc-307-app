@@ -41,6 +41,11 @@ const users = {
 app.use(cors());
 app.use(express.json());
 
+// ID generator function
+const generateRandomId = () => {
+  return Math.random().toString(36).substr(2, 9); // Generate a random alphanumeric string
+};
+
 const findUserByName = (name) => {
   return users["users_list"].filter(
     (user) => user["name"] === name
@@ -57,6 +62,7 @@ const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
 const addUser = (user) => {
+  user.id = generateRandomId(); // Assign a random ID to the user
   users["users_list"].push(user);
   return user;
 };
@@ -93,8 +99,8 @@ app.post("/users", (req, res) => {
     res.status(400).send("Invalid user data.");
     return;
   }
-  addUser(userToAdd);
-  res.status(201).send(userToAdd); // 201 Created for successful addition
+  const addedUser = addUser(userToAdd); // Add user with a generated ID
+  res.status(201).send(addedUser); // 201 Created for successful addition
 });
 
 app.delete("/users/:id", (req, res) => {
