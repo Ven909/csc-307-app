@@ -63,8 +63,9 @@ const findUserById = (id) =>
 
 const addUser = (user) => {
   user.id = generateRandomId(); // Assign a random ID to the user
-  users["users_list"].push(user);
-  return user;
+  const new_user = { "id": user.id, "name": user.name, "job": user.job };
+  users["users_list"].push(new_user);
+  return new_user;
 };
 
 const deleteUser = (id) => {
